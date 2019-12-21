@@ -7,32 +7,6 @@ import (
 	"strconv"
 )
 
-var (
-	// Debug will print returned values if set true
-	Debug = false
-
-	dead    = false
-	fatal   = true
-	verbose = true
-)
-
-func debug(s string, args ...interface{}) {
-	if Debug && verbose {
-		log.Printf(s, args...)
-	}
-}
-
-func flog(s string, args ...interface{}) {
-	if fatal {
-		log.Fatalf(s, args...)
-	}
-	if verbose {
-		log.Printf(s, args...)
-	}
-	dead = true
-	verbose = false
-}
-
 // String reads an environment variable from the OS
 func String(key string) string {
 	return os.Getenv(key)
@@ -41,10 +15,8 @@ func String(key string) string {
 // StringDefault returns an env value or the default if not specified
 func StringDefault(key string, value string) string {
 	if s := String(key); s != "" {
-		debug("%s=%s\n", key, s)
 		return s
 	}
-	debug("%s=%s #DEFAULT\n", key, value)
 	return value
 }
 
@@ -52,9 +24,8 @@ func StringDefault(key string, value string) string {
 func StringMust(key string) string {
 	s := String(key)
 	if s == "" {
-		flog("required variable %q was not set or is empty", key)
+		log.Fatalf("required key %q was not set or is empty", key)
 	}
-	debug("%s=%s\n", key, s)
 	return s
 }
 
@@ -66,9 +37,8 @@ func Int(key string) int {
 	}
 	i, err := strconv.Atoi(value)
 	if err != nil {
-		flog("error converting key:%s value:%q to integer:%v\n", key, value, err)
+		log.Fatalf("error converting key:%s value:%q to integer:%v\n", key, value, err)
 	}
-	debug("%s=%d\n", key, i)
 	return i
 }
 
@@ -76,14 +46,12 @@ func Int(key string) int {
 func IntDefault(key string, value int) int {
 	s := os.Getenv(key)
 	if s == "" {
-		debug("%s=%d #DEFAULT\n", key, value)
 		return value
 	}
 	i, err := strconv.Atoi(s)
 	if err != nil {
-		flog("error converting key:%s value:%q to integer:%v\n", key, s, err)
+		log.Fatalf("error converting key:%s value:%q to integer:%v\n", key, s, err)
 	}
-	debug("%s=%d\n", key, i)
 	return i
 }
 
@@ -91,11 +59,11 @@ func IntDefault(key string, value int) int {
 func IntMust(key string) int {
 	s := os.Getenv(key)
 	if s == "" {
-		flog("required variable %q was not set or is empty", key)
+		log.Fatalf("required variable %q was not set or is empty", key)
 	}
 	i, err := strconv.Atoi(s)
 	if err != nil {
-		flog("error converting key:%s value:%q to integer:%v\n", key, s, err)
+		log.Fatalf("error converting key:%s value:%q to integer:%v\n", key, s, err)
 	}
 	return i
 }
@@ -105,7 +73,7 @@ func Bool(key string) bool {
 	if s := os.Getenv(key); s != "" {
 		b, err := strconv.ParseBool(s)
 		if err != nil {
-			flog("error converting key:%s value:%q to boolean:%v\n", key, s, err)
+			log.Fatalf("error converting key:%s value:%q to boolean:%v\n", key, s, err)
 		}
 		return b
 	}
@@ -116,11 +84,11 @@ func Bool(key string) bool {
 func BoolMust(key string) bool {
 	s := os.Getenv(key)
 	if s == "" {
-		flog("required variable %q was not set or is empty", key)
+		log.Fatalf("required variable %q was not set or is empty\n", key)
 	}
 	b, err := strconv.ParseBool(s)
 	if err != nil {
-		flog("error converting key:%s value:%q to boolean:%v\n", key, s, err)
+		log.Fatalf("error converting key:%s value:%q to boolean:%v\n", key, s, err)
 	}
 	return b
 }
